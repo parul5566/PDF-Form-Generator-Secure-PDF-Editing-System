@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload PDF</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#f0f2f5; color:#1c2733; }
+  .navbar { background:#1f3a5f; color:#fff; padding:14px 24px; display:flex; gap:28px; align-items:center; }
+  .navbar .brand { font-weight:700; font-size:16px; }
+  .navbar a { color:#cfe0f5; text-decoration:none; font-size:14px; }
+  .container { max-width: 720px; margin: 48px auto; padding: 0 16px; }
+  .card { background:#fff; border-radius:10px; padding:32px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  h1 { font-size:20px; margin-top:0; }
+  .drop { border:2px dashed #b8c6d4; border-radius:10px; padding:36px; text-align:center; color:#5a6b7d; margin:18px 0; }
+  .btn { padding:11px 26px; border-radius:8px; border:0; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn-primary { background:#1f6feb; color:#fff; }
+  .error { background:#fdecea; color:#a4262c; border:1px solid #f5c6c2; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <span class="brand">PDF Form Generator</span>
+  <a href="/">Home</a>
+  <a href="/form/new">New GSTR-3B</a>
+  <a href="/documents">Document History</a>
+  <a href="/upload">Upload PDF</a>
+</div>
+<div class="container">
+  <div class="card">
+    <h1>Upload an Existing PDF</h1>
+    <div class="error" th:if="${error}" th:text="${error}"></div>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+      <div class="drop">
+        <input type="file" name="file" accept="application/pdf" required style="margin-bottom:14px">
+        <div style="font-size:13px">PDF only, max 20 MB. Fillable (AcroForm) PDFs can be edited.</div>
+      </div>
+      <button class="btn btn-primary" type="submit">Upload &amp; Detect Fields</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

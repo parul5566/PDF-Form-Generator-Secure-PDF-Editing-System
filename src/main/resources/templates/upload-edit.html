@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit PDF Fields</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#f0f2f5; color:#1c2733; font-size:14px; }
+  .navbar { background:#1f3a5f; color:#fff; padding:14px 24px; display:flex; gap:28px; align-items:center; }
+  .navbar .brand { font-weight:700; font-size:16px; }
+  .navbar a { color:#cfe0f5; text-decoration:none; font-size:14px; }
+  .container { max-width: 860px; margin: 24px auto 60px; padding: 0 16px; }
+  .card { background:#fff; border-radius:10px; padding:24px 28px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  h1 { font-size:20px; margin-top:0; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:#f1f1f1; text-align:left; padding:8px 10px; border:1px solid #ccd5dd; font-size:12.5px; }
+  td { padding:6px 10px; border:1px solid #dde5ec; font-size:13px; }
+  input[type=text] { width:100%; padding:7px 9px; border:1px solid #b8c6d4; border-radius:5px; font-size:13px; }
+  .btn { padding:11px 26px; border-radius:8px; border:0; font-size:15px; font-weight:600; cursor:pointer; margin-top:18px; }
+  .btn-primary { background:#1f6feb; color:#fff; }
+  .type { color:#5a6b7d; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <span class="brand">PDF Form Generator</span>
+  <a href="/">Home</a>
+  <a href="/form/new">New GSTR-3B</a>
+  <a href="/documents">Document History</a>
+  <a href="/upload">Upload PDF</a>
+</div>
+<div class="container">
+  <div class="card">
+    <h1>Edit PDF Fields</h1>
+    <p style="color:#5a6b7d">File: <strong th:text="${originalName}">file.pdf</strong> — <span th:text="${#lists.size(fields)}">0</span> editable field(s) detected.</p>
+    <form method="post" action="/upload/save">
+      <input type="hidden" name="storedName" th:value="${storedName}">
+      <table>
+        <tr><th style="width:38%">Field name</th><th style="width:14%">Type</th><th>Value</th></tr>
+        <tr th:each="f : ${fields}">
+          <td th:text="${f['name']}">field</td>
+          <td class="type" th:text="${f['type']}">PDTextField</td>
+          <td><input type="text" th:name="'field:' + ${f['name']}" th:value="${f['value']}"></td>
+        </tr>
+      </table>
+      <button class="btn btn-primary" type="submit">Save &amp; Download Updated PDF</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

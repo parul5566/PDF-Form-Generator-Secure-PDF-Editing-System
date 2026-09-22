@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document History</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#f0f2f5; color:#1c2733; font-size:14px; }
+  .navbar { background:#1f3a5f; color:#fff; padding:14px 24px; display:flex; gap:28px; align-items:center; }
+  .navbar .brand { font-weight:700; font-size:16px; }
+  .navbar a { color:#cfe0f5; text-decoration:none; font-size:14px; }
+  .container { max-width: 1100px; margin: 24px auto 60px; padding: 0 16px; }
+  .card { background:#fff; border-radius:10px; padding:24px 28px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  h1 { font-size:20px; margin:0 0 16px; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:#f1f1f1; text-align:left; padding:9px 10px; border:1px solid #ccd5dd; font-size:12.5px; }
+  td { padding:8px 10px; border:1px solid #dde5ec; font-size:13px; }
+  .pill { padding:2px 10px; border-radius:10px; font-size:12px; font-weight:600; }
+  .pill-ready { background:#e3f5e8; color:#1d7a3a; }
+  .pill-enc { background:#eef0ff; color:#3a44a8; }
+  .pill-none { background:#f2f2f2; color:#666; }
+  a.link { color:#1f6feb; text-decoration:none; margin-right:10px; }
+  a.link:hover { text-decoration:underline; }
+  .empty { color:#5a6b7d; padding:24px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <span class="brand">PDF Form Generator</span>
+  <a href="/">Home</a>
+  <a href="/form/new">New GSTR-3B</a>
+  <a href="/documents">Document History</a>
+  <a href="/upload">Upload PDF</a>
+</div>
+<div class="container">
+  <div class="card">
+    <h1>Document History</h1>
+    <div class="empty" th:if="${#lists.isEmpty(docs)}">No documents yet. <a href="/form/new">Generate your first GSTR-3B PDF</a>.</div>
+    <table th:if="${!#lists.isEmpty(docs)}">
+      <tr><th>ID</th><th>Reference No</th><th>Type</th><th>Filename</th><th>Status</th><th>Encryption</th><th>Created</th><th>Actions</th></tr>
+      <tr th:each="doc : ${docs}">
+        <td th:text="${doc.id}">1</td>
+        <td th:text="${doc.getFormData() != null && doc.getFormData().getReferenceNo() != null ? doc.getFormData().getReferenceNo() : '—'}">REF</td>
+        <td th:text="${doc.docType}">GENERATED</td>
+        <td th:text="${doc.generatedFilename}">file.pdf</td>
+        <td><span class="pill pill-ready" th:text="${doc.status}">READY</span></td>
+        <td><span class="pill" th:classappend="${doc.encryptionStatus == 'ENCRYPTED'} ? pill-enc : pill-none" th:text="${doc.encryptionStatus}">NONE</span></td>
+        <td th:text="${#temporals.format(doc.createdAt, 'dd MMM yyyy HH:mm')}">date</td>
+        <td>
+          <a class="link" target="_blank" th:href="@{/documents/{id}/preview(id=${doc.id})}">Preview</a>
+          <a class="link" th:href="@{/documents/{id}/download(id=${doc.id})}">Download</a>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title th:if="${pdfMode}">Form GSTR-3B</title><style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #eee; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111;
+    font-size: 10px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm;
+    height: 297mm;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    padding: 14.8mm 7mm 7mm;
+    margin: 0 auto 8px;
+  }
+  .page + .page { padding-top: 13.7mm; }
+  .page3 { padding-top: 13.7mm; }
+
+  .watermark {
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    margin-left: -160px;
+    margin-top: -40px;
+    width: 320px;
+    height: 80px;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .content { position: relative; z-index: 1; }
+
+  .title { text-align: center; font-size: 18px; font-weight: 700; margin: 0; }
+  .subtitle { text-align: center; font-size: 13px; font-style: italic; margin-top: 7px; }
+
+  .yrperiod {
+    width: 68mm;
+    margin-left: auto;
+    margin-top: 28px;
+    border-collapse: collapse;
+    font-size: 9px;
+  }
+  .yrperiod td { border: 1px solid #555; height: 16px; padding: 2px 5px; }
+  .yrperiod td:first-child { background:#f6d2b3; font-weight:700; width: 31mm; }
+
+  .meta {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 22px;
+    font-size: 9px;
+  }
+  .meta td { border: 1px solid #555; height: 15px; padding: 2px 5px; }
+  .meta td:first-child { background:#f6d2b3; width: 38%; }
+  .amount-note { text-align:right; font-size:9px; margin: 7px 0 12px; }
+
+  .section-title {
+    background: #fde7d5;
+    font-weight: 700;
+    font-size: 10.5px;
+    padding: 4px 6px;
+    margin-top: 11px;
+    line-height: 1.18;
+  }
+  table.form {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 9px;
+  }
+  table.form th, table.form td {
+    border: 1px solid #222;
+    padding: 3px 5px;
+    vertical-align: middle;
+    line-height: 1.12;
+  }
+  table.form th {
+    background: #f1f1f1;
+    font-weight: 700;
+    text-align: left;
+  }
+  .num { text-align: right; white-space: nowrap; }
+  .center { text-align:center; }
+  .bold { font-weight:700; }
+  .wrap { white-space: normal; }
+  .small { font-size: 8.6px; }
+
+  .t31 col.c1 { width: 50%; }
+  .t31 col.c2 { width: 14%; }
+  .t31 col.c3, .t31 col.c4, .t31 col.c5, .t31 col.c6 { width: 9%; }
+
+  .t311 col.c1 { width: 61%; }
+  .t311 col.c2 { width: 9.75%; }
+  .t311 col.c3, .t311 col.c4, .t311 col.c5, .t311 col.c6 { width: 7.25%; }
+
+  .t32 col.c1 { width: 34%; }
+  .t32 col.c2 { width: 33%; }
+  .t32 col.c3 { width: 33%; }
+
+  .t4 col.c1 { width: 52%; }
+  .t4 col.c2, .t4 col.c3, .t4 col.c4, .t4 col.c5 { width: 12%; }
+
+  .t5 col.c1 { width: 58%; }
+  .t5 col.c2, .t5 col.c3 { width: 21%; }
+
+  .t51 col.c1 { width: 21%; }
+  .t51 col.c2, .t51 col.c3, .t51 col.c4, .t51 col.c5 { width: 19.75%; }
+
+  .t61 col.c1 { width: 9%; }
+  .t61 col.c2 { width: 9%; }
+  .t61 col.c3 { width: 18%; }
+  .t61 col.c4 { width: 9%; }
+  .t61 col.c5, .t61 col.c6, .t61 col.c7, .t61 col.c8 { width: 8.5%; }
+  .t61 col.c9, .t61 col.c10, .t61 col.c11 { width: 9.333%; }
+
+  .t61 th { height: 57px; vertical-align: top; }
+  .t61 td { height: 26px; }
+
+  .breakup col.c1 { width: 21%; }
+  .breakup col.c2, .breakup col.c3, .breakup col.c4, .breakup col.c5 { width: 19.75%; }
+
+  .page2 .section-title:first-of-type { margin-top: 0; }
+  .page2 .t4 { margin-top: 0; }
+  .page2 .section-title { margin-top: 12px; }
+
+  .verify { margin-top: 16px; font-size: 10px; line-height: 1.25; }
+  .verify .head { font-weight:700; margin-bottom: 1px; }
+  .sign-grid { width:100%; margin-top: 13px; font-size: 10px; border-collapse: collapse; }
+  .sign-grid td { vertical-align: top; }
+  .sign-right div { margin-bottom: 9px; }
+  .sign-right .value { margin-top: 3px; }
+
+  .page3 .watermark { top: 58%; }
+  .page3 .content { padding-top: 0; }
+
+  @media print {
+    html, body { background:#fff; }
+    .page { margin:0; page-break-after:always; }
+    .page:last-child { page-break-after:auto; }
+  }
+</style>
+</head>
+<body>
+
+<section class="page page1">
+  <svg class="watermark" viewBox="0 0 320 80"><text x="160" y="58" text-anchor="middle" transform="rotate(-55 160 40)" font-family="Arial" font-size="72" font-weight="700" fill="rgba(195,195,195,0.58)" letter-spacing="1">FILED</text></svg>
+  <div class="content">
+    <h1 class="title">Form GSTR-3B</h1>
+    <div class="subtitle">[See rule 61(5)]</div>
+
+    <table class="yrperiod">
+      <tr><td>Year</td><td th:text="${d.get('year')}">2026-27</td></tr>
+      <tr><td>Period</td><td th:text="${d.get('period')}">August</td></tr>
+    </table>
+
+    <table class="meta">
+      <tr><td>GSTIN of the supplier</td><td th:text="${d.get('gstin')}">&nbsp;</td></tr>
+      <tr><td>2(a). Legal name of the registered person</td><td th:text="${d.get('legalName')}">&nbsp;</td></tr>
+      <tr><td>2(b). Trade name, if any</td><td th:text="${d.get('tradeName')}">&nbsp;</td></tr>
+      <tr><td>2(c). ARN</td><td th:text="${d.get('arn')}">&nbsp;</td></tr>
+      <tr><td>2(d). Date of ARN</td><td th:text="${d.get('arnDate')}">&nbsp;</td></tr>
+    </table>
+    <div class="amount-note">(Amount in &#8377; for all tables)</div>
+
+    <div class="section-title">3.1 Details of Outward supplies and inward supplies liable to reverse charge (other than those covered by Table 3.1.1)</div>
+    <table class="form t31">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" /></colgroup>
+      <tr>
+        <th>Nature of Supplies</th><th>Total taxable<br/>value</th><th>Integrated<br/>tax</th><th>Central<br/>tax</th><th>State/UT<br/>tax</th><th>Cess</th>
+      </tr>
+      <tr><td>(a) Outward taxable supplies (other than zero rated, nil rated and exempted)</td><td class="num" th:text="${d.num('t31_a_val')}">0.00</td><td class="num" th:text="${d.num('t31_a_igst')}">0.00</td><td class="num" th:text="${d.num('t31_a_cgst')}">0.00</td><td class="num" th:text="${d.num('t31_a_sgst')}">0.00</td><td class="num" th:text="${d.num('t31_a_cess')}">0.00</td></tr>
+      <tr><td>(b) Outward taxable supplies (zero rated)</td><td class="num" th:text="${d.num('t31_b_val')}">0.00</td><td class="num" th:text="${d.num('t31_b_igst')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="num" th:text="${d.num('t31_b_cess')}">0.00</td></tr>
+      <tr><td>(c ) Other outward supplies (nil rated, exempted)</td><td class="num" th:text="${d.num('t31_c_val')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td></tr>
+      <tr><td>(d) Inward supplies (liable to reverse charge)</td><td class="num" th:text="${d.num('t31_d_val')}">0.00</td><td class="num" th:text="${d.num('t31_d_igst')}">0.00</td><td class="num" th:text="${d.num('t31_d_cgst')}">0.00</td><td class="num" th:text="${d.num('t31_d_sgst')}">0.00</td><td class="num" th:text="${d.num('t31_d_cess')}">0.00</td></tr>
+      <tr><td>(e) Non-GST outward supplies</td><td class="num" th:text="${d.num('t31_e_val')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td></tr>
+    </table>
+
+    <div class="section-title">3.1.1 Details of Supplies notified under section 9(5) of the CGST Act, 2017 and corresponding provisions in IGST/UTGST/<br/>SGST Acts</div>
+    <table class="form t311">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" /></colgroup>
+      <tr>
+        <th>Nature of Supplies</th><th>Total taxable<br/>value</th><th>Integrated<br/>tax</th><th>Central<br/>tax</th><th>State/UT<br/>tax</th><th>Cess</th>
+      </tr>
+      <tr>
+        <td>(i) Taxable supplies on which electronic commerce operator pays tax u/s 9(5) [to be furnished by electronic commerce operator]</td>
+        <td class="num" th:text="${d.num('t311_i_val')}">0.00</td><td class="num" th:text="${d.num('t311_i_igst')}">0.00</td><td class="num" th:text="${d.num('t311_i_cgst')}">0.00</td><td class="num" th:text="${d.num('t311_i_sgst')}">0.00</td><td class="num" th:text="${d.num('t311_i_cess')}">0.00</td>
+      </tr>
+      <tr>
+        <td>(ii) Taxable supplies made by registered person through electronic commerce operator, on which electronic commerce operator is required to pay tax u/s 9(5) [to be furnished by registered person making supplies through electronic commerce operator]</td>
+        <td class="num" th:text="${d.num('t311_ii_val')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td>
+      </tr>
+    </table>
+
+    <div class="section-title">3.2 Out of supplies made in 3.1 (a) and 3.1.1 (i), details of inter-state supplies made</div>
+    <table class="form t32">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /></colgroup>
+      <tr><th>Nature of Supplies</th><th>Total taxable value</th><th>Integrated tax</th></tr>
+      <tr><td>Supplies made to Unregistered Persons</td><td class="num" th:text="${d.num('t32_unreg_val')}">0.00</td><td class="num" th:text="${d.num('t32_unreg_igst')}">0.00</td></tr>
+      <tr><td>Supplies made to Composition Taxable<br/>Persons</td><td class="num" th:text="${d.num('t32_comp_val')}">0.00</td><td class="num" th:text="${d.num('t32_comp_igst')}">0.00</td></tr>
+      <tr><td>Supplies made to UIN holders</td><td class="num" th:text="${d.num('t32_uin_val')}">0.00</td><td class="num" th:text="${d.num('t32_uin_igst')}">0.00</td></tr>
+    </table>
+
+    <div class="section-title">4. Eligible ITC</div>
+    <table class="form t4">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /></colgroup>
+      <tr><th>Details</th><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+      <tr><td class="bold">A. ITC Available (whether in full or part)</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>(1) Import of goods</td><td class="num" th:text="${d.num('t4_a1_igst')}">0.00</td><td class="num" th:text="${d.num('t4_a1_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_a1_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_a1_cess')}">0.00</td></tr>
+      <tr><td>(2) Import of services</td><td class="num" th:text="${d.num('t4_a2_igst')}">0.00</td><td class="num" th:text="${d.num('t4_a2_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_a2_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_a2_cess')}">0.00</td></tr>
+      <tr><td>(3) Inward supplies liable to reverse charge (other than 1 &amp; 2 above)</td><td class="num" th:text="${d.num('t4_a3_igst')}">0.00</td><td class="num" th:text="${d.num('t4_a3_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_a3_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_a3_cess')}">0.00</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="page page2">
+  <svg class="watermark" viewBox="0 0 320 80"><text x="160" y="58" text-anchor="middle" transform="rotate(-55 160 40)" font-family="Arial" font-size="72" font-weight="700" fill="rgba(195,195,195,0.58)" letter-spacing="1">FILED</text></svg>
+  <div class="content">
+    <table class="form t4">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /></colgroup>
+      <tr><td>(4) Inward supplies from ISD</td><td class="num" th:text="${d.num('t4_a4_igst')}">0.00</td><td class="num" th:text="${d.num('t4_a4_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_a4_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_a4_cess')}">0.00</td></tr>
+      <tr><td>(5) All other ITC</td><td class="num" th:text="${d.num('t4_a5_igst')}">0.00</td><td class="num" th:text="${d.num('t4_a5_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_a5_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_a5_cess')}">0.00</td></tr>
+      <tr><td class="bold">B. ITC Reversed</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>(1) As per rules 38,42 &amp; 43 of CGST Rules and section 17(5)</td><td class="num" th:text="${d.num('t4_b1_igst')}">0.00</td><td class="num" th:text="${d.num('t4_b1_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_b1_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_b1_cess')}">0.00</td></tr>
+      <tr><td>(2) Others</td><td class="num" th:text="${d.num('t4_b2_igst')}">0.00</td><td class="num" th:text="${d.num('t4_b2_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_b2_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_b2_cess')}">0.00</td></tr>
+      <tr><td class="bold">C. Net ITC available (A-B)</td><td class="num" th:text="${d.num('t4_c_igst')}">0.00</td><td class="num" th:text="${d.num('t4_c_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_c_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_c_cess')}">0.00</td></tr>
+      <tr><td class="bold">(D) Other Details</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.00</td></tr>
+      <tr><td>(1) ITC reclaimed which was reversed under Table 4(B)(2) in earlier tax period</td><td class="num" th:text="${d.num('t4_d1_igst')}">0.00</td><td class="num" th:text="${d.num('t4_d1_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_d1_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_d1_cess')}">0.00</td></tr>
+      <tr><td>(2) Ineligible ITC under section 16(4) &amp; ITC restricted due to PoS rules</td><td class="num" th:text="${d.num('t4_d2_igst')}">0.00</td><td class="num" th:text="${d.num('t4_d2_cgst')}">0.00</td><td class="num" th:text="${d.num('t4_d2_sgst')}">0.00</td><td class="num" th:text="${d.num('t4_d2_cess')}">0.00</td></tr>
+    </table>
+
+    <div class="section-title">5 Values of exempt, nil-rated and non-GST inward supplies</div>
+    <table class="form t5">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /></colgroup>
+      <tr><th>Nature of Supplies</th><th>Inter- State supplies</th><th>Intra- State supplies</th></tr>
+      <tr><td>From a supplier under composition scheme, Exempt, Nil rated supply</td><td class="num" th:text="${d.num('t5_exempt_inter')}">0.00</td><td class="num" th:text="${d.num('t5_exempt_intra')}">0.00</td></tr>
+      <tr><td>Non GST supply</td><td class="num" th:text="${d.num('t5_nonGst_inter')}">0.00</td><td class="num" th:text="${d.num('t5_nonGst_intra')}">0.00</td></tr>
+    </table>
+
+    <div class="section-title">5.1 Interest and Late fee for previous tax period</div>
+    <table class="form t51">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /></colgroup>
+      <tr><th>Details</th><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+      <tr><td>System computed<br/>Interest</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td></tr>
+      <tr><td>Interest Paid</td><td class="num" th:text="${d.num('t51_interestPaid_igst')}">0.00</td><td class="num" th:text="${d.num('t51_interestPaid_cgst')}">0.00</td><td class="num" th:text="${d.num('t51_interestPaid_sgst')}">0.00</td><td class="num" th:text="${d.num('t51_interestPaid_cess')}">0.00</td></tr>
+      <tr><td>Late fee</td><td class="center">-</td><td class="num" th:text="${d.num('t51_lateFee_cgst')}">0.00</td><td class="num" th:text="${d.num('t51_lateFee_sgst')}">0.00</td><td class="center">-</td></tr>
+    </table>
+
+    <div class="section-title">6.1 Payment of tax</div>
+    <table class="form t61">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /><col class="c6" /><col class="c7" /><col class="c8" /><col class="c9" /><col class="c10" /><col class="c11" /></colgroup>
+      <tr>
+        <th>Descripti<br/>on</th><th>Tax<br/>payable</th><th>Adjustment<br/>of negative<br/>liability of<br/>previous<br/>tax period</th><th>Net Tax<br/>Payable</th>
+        <th colspan="4" class="center">Tax paid through ITC</th><th>Tax paid<br/>in cash</th><th>Interest<br/>paid in<br/>cash</th><th>Late fee<br/>paid in<br/>cash</th>
+      </tr>
+      <tr><td colspan="10" class="bold">(A) Other than reverse charge</td></tr>
+      <tr>
+        <td>Integrated<br/>tax</td><td class="num" th:text="${d.num('t61_aIgst_payable')}">0.00</td><td class="num" th:text="${d.num('t61_aIgst_adj')}">0.00</td><td class="num" th:text="${d.num('t61_aIgst_net')}">0.00</td>
+        <td class="num" th:text="${d.num('t61_aIgst_itcI')}">0.00</td><td class="num" th:text="${d.num('t61_aIgst_itcC')}">0.00</td><td class="num" th:text="${d.num('t61_aIgst_itcS')}">0.00</td><td class="center">-</td>
+        <td class="num" th:text="${d.num('t61_aIgst_cash')}">0.00</td><td class="num" th:text="${d.num('t61_aIgst_intCash')}">0.00</td><td class="center">-</td>
+      </tr>
+      <tr>
+        <td>Central<br/>tax</td><td class="num" th:text="${d.num('t61_aCgst_payable')}">0.00</td><td class="num" th:text="${d.num('t61_aCgst_adj')}">0.00</td><td class="num" th:text="${d.num('t61_aCgst_net')}">0.00</td>
+        <td class="num" th:text="${d.num('t61_aCgst_itcI')}">0.00</td><td class="num" th:text="${d.num('t61_aCgst_itcC')}">0.00</td><td class="center">-</td><td class="center">-</td>
+        <td class="num" th:text="${d.num('t61_aCgst_cash')}">0.00</td><td class="num" th:text="${d.num('t61_aCgst_intCash')}">0.00</td><td class="num" th:text="${d.num('t61_aCgst_lfCash')}">0.00</td>
+      </tr>
+      <tr>
+        <td>State/UT<br/>tax</td><td class="num" th:text="${d.num('t61_aSgst_payable')}">0.00</td><td class="num" th:text="${d.num('t61_aSgst_adj')}">0.00</td><td class="num" th:text="${d.num('t61_aSgst_net')}">0.00</td>
+        <td class="num" th:text="${d.num('t61_aSgst_itcI')}">0.00</td><td class="center">-</td><td class="num" th:text="${d.num('t61_aSgst_itcS')}">0.00</td><td class="center">-</td>
+        <td class="num" th:text="${d.num('t61_aSgst_cash')}">0.00</td><td class="num" th:text="${d.num('t61_aSgst_intCash')}">0.00</td><td class="num" th:text="${d.num('t61_aSgst_lfCash')}">0.00</td>
+      </tr>
+      <tr>
+        <td>Cess</td><td class="num" th:text="${d.num('t61_aCess_payable')}">0.00</td><td class="num" th:text="${d.num('t61_aCess_adj')}">0.00</td><td class="num" th:text="${d.num('t61_aCess_net')}">0.00</td>
+        <td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="num" th:text="${d.num('t61_aCess_itcCess')}">0.00</td>
+        <td class="num" th:text="${d.num('t61_aCess_cash')}">0.00</td><td class="num" th:text="${d.num('t61_aCess_intCash')}">0.00</td><td class="center">-</td>
+      </tr>
+      <tr><td colspan="10" class="bold">(B) Reverse charge and supplies made u/s 9(5)</td></tr>
+      <tr><td>Integrated<br/>tax</td><td class="num" th:text="${d.num('t61_bIgst_payable')}">0.00</td><td class="num" th:text="${d.num('t61_bIgst_adj')}">0.00</td><td class="num" th:text="${d.num('t61_bIgst_net')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="num" th:text="${d.num('t61_bIgst_cash')}">0.00</td><td class="center">-</td><td class="center">-</td></tr>
+      <tr><td>Central<br/>tax</td><td class="num" th:text="${d.num('t61_bCgst_payable')}">0.00</td><td class="num" th:text="${d.num('t61_bCgst_adj')}">0.00</td><td class="num" th:text="${d.num('t61_bCgst_net')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="num" th:text="${d.num('t61_bCgst_cash')}">0.00</td><td class="center">-</td><td class="center">-</td></tr>
+      <tr><td>State/UT<br/>tax</td><td class="num" th:text="${d.num('t61_bSgst_payable')}">0.00</td><td class="num" th:text="${d.num('t61_bSgst_adj')}">0.00</td><td class="num" th:text="${d.num('t61_bSgst_net')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="num" th:text="${d.num('t61_bSgst_cash')}">0.00</td><td class="center">-</td><td class="center">-</td></tr>
+      <tr><td>Cess</td><td class="num" th:text="${d.num('t61_bCess_payable')}">0.00</td><td class="num" th:text="${d.num('t61_bCess_adj')}">0.00</td><td class="num" th:text="${d.num('t61_bCess_net')}">0.00</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td class="num" th:text="${d.num('t61_bCess_cash')}">0.00</td><td class="center">-</td><td class="center">-</td></tr>
+    </table>
+
+    <div class="section-title">Breakup of tax liability declared (for interest computation)</div>
+    <table class="form breakup">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /></colgroup>
+      <tr><th>Period</th><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+    </table>
+  </div>
+</section>
+
+<section class="page page3">
+  <svg class="watermark" viewBox="0 0 320 80"><text x="160" y="58" text-anchor="middle" transform="rotate(-55 160 40)" font-family="Arial" font-size="72" font-weight="700" fill="rgba(195,195,195,0.58)" letter-spacing="1">FILED</text></svg>
+  <div class="content">
+    <table class="form breakup">
+      <colgroup><col class="c1" /><col class="c2" /><col class="c3" /><col class="c4" /><col class="c5" /></colgroup>
+      <tr><td th:text="${d.get('period')} + ' ' + ${d.get('year')}">August 2026</td><td class="num" th:text="${d.num('breakup_igst')}">0.00</td><td class="num" th:text="${d.num('breakup_cgst')}">0.00</td><td class="num" th:text="${d.num('breakup_sgst')}">0.00</td><td class="num" th:text="${d.num('breakup_cess')}">0.00</td></tr>
+    </table>
+
+    <div class="verify">
+      <div class="head">Verification:</div>
+      I hereby solemnly affirm and declare that the information given herein above is true and correct to the best of my knowledge and belief and<br/>
+      nothing has been concealed there from.
+    </div>
+
+    <table class="sign-grid">
+      <tr>
+        <td th:text="'Date: ' + ${d.get('verifyDate')}">Date: 15/09/2026</td>
+        <td class="sign-right">
+          <div>Name of Authorized Signatory<div class="value" th:text="${d.get('signatoryName')}">&nbsp;</div></div>
+          <div>Designation / Status<div class="value" th:text="${d.get('designation')}">&nbsp;</div></div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+</body>
+</html>

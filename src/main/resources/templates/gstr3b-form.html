@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form GSTR-3B — Data Entry</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#f0f2f5; color:#1c2733; font-size:14px; }
+  .navbar { background:#1f3a5f; color:#fff; padding:14px 24px; display:flex; gap:28px; align-items:center; }
+  .navbar .brand { font-weight:700; font-size:16px; }
+  .navbar a { color:#cfe0f5; text-decoration:none; font-size:14px; }
+  .container { max-width: 1080px; margin: 24px auto 60px; padding: 0 16px; }
+  .card { background:#fff; border-radius:10px; padding:24px 28px; box-shadow:0 2px 8px rgba(0,0,0,.08); margin-bottom:18px; }
+  h1 { font-size:20px; margin:0 0 6px; }
+  .hint { color:#5a6b7d; font-size:13px; }
+  .sec { background:#fde7d5; font-weight:700; padding:8px 12px; border-radius:6px; margin:22px 0 12px; font-size:15px; }
+  .sec:first-of-type { margin-top:0; }
+  table.grid { width:100%; border-collapse:collapse; font-size:13px; }
+  table.grid th { background:#f1f1f1; border:1px solid #ccd5dd; padding:7px 8px; text-align:left; font-size:12.5px; }
+  table.grid td { border:1px solid #dde5ec; padding:5px 8px; }
+  table.grid td.lbl { width:34%; }
+  input[type=text] { width:100%; padding:7px 9px; border:1px solid #b8c6d4; border-radius:5px; font-size:13px; }
+  input.num { text-align:right; }
+  input:focus { outline:2px solid #1f6feb33; border-color:#1f6feb; }
+  .btnbar { display:flex; gap:12px; margin-top:22px; }
+  .btn { padding:11px 26px; border-radius:8px; border:0; font-size:15px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; }
+  .btn-primary { background:#1f6feb; color:#fff; }
+  .btn-secondary { background:#e7edf3; color:#1f3a5f; }
+  .error { background:#fdecea; color:#a4262c; border:1px solid #f5c6c2; border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="navbar">
+  <span class="brand">PDF Form Generator</span>
+  <a href="/">Home</a>
+  <a href="/form/new">New GSTR-3B</a>
+  <a href="/documents">Document History</a>
+  <a href="/upload">Upload PDF</a>
+</div>
+<div class="container">
+  <div class="card">
+    <h1>Form GSTR-3B — Data Entry</h1>
+    <div class="hint">Fill the details below. All amounts are in &#8377;. Fields left blank default to 0.00.</div>
+  </div>
+
+  <div class="error" th:if="${error}" th:text="${error}"></div>
+
+  <form th:action="@{/form/submit}" method="post" th:object="${d}">
+    <div class="card">
+      <div class="sec">Filing &amp; Supplier Details</div>
+      <table class="grid">
+        <tr><td class="lbl">Year</td><td><input type="text" th:field="*{values['year']}" placeholder="e.g. 2026-27"></td>
+            <td class="lbl">Period (Month)</td><td><input type="text" th:field="*{values['period']}" placeholder="e.g. August"></td></tr>
+        <tr><td class="lbl">GSTIN of the supplier *</td><td><input type="text" th:field="*{values['gstin']}" placeholder="e.g. 23BEPPY8189E1ZP"></td>
+            <td class="lbl">Legal name *</td><td><input type="text" th:field="*{values['legalName']}"></td></tr>
+        <tr><td class="lbl">Trade name</td><td><input type="text" th:field="*{values['tradeName']}"></td>
+            <td class="lbl">ARN</td><td><input type="text" th:field="*{values['arn']}"></td></tr>
+        <tr><td class="lbl">Date of ARN</td><td><input type="text" th:field="*{values['arnDate']}" placeholder="dd/mm/yyyy"></td>
+            <td class="lbl"></td><td></td></tr>
+      </table>
+
+      <div class="sec">3.1 — Outward supplies &amp; inward supplies liable to reverse charge</div>
+      <table class="grid">
+        <tr><th>Nature of Supplies</th><th>Total taxable value</th><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+        <tr><td>(a) Outward taxable supplies (other than zero rated, nil rated and exempted)</td>
+          <td><input class="num" type="text" th:field="*{values['t31_a_val']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_a_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_a_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_a_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_a_cess']}"></td></tr>
+        <tr><td>(b) Outward taxable supplies (zero rated)</td>
+          <td><input class="num" type="text" th:field="*{values['t31_b_val']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_b_igst']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" th:field="*{values['t31_b_cess']}"></td></tr>
+        <tr><td>(c) Other outward supplies (nil rated, exempted)</td>
+          <td><input class="num" type="text" th:field="*{values['t31_c_val']}"></td>
+          <td colspan="4" class="hint" style="text-align:center">—</td></tr>
+        <tr><td>(d) Inward supplies (liable to reverse charge)</td>
+          <td><input class="num" type="text" th:field="*{values['t31_d_val']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_d_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_d_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_d_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t31_d_cess']}"></td></tr>
+        <tr><td>(e) Non-GST outward supplies</td>
+          <td><input class="num" type="text" th:field="*{values['t31_e_val']}"></td>
+          <td colspan="4" class="hint" style="text-align:center">—</td></tr>
+      </table>
+
+      <div class="sec">3.1.1 — Supplies notified under section 9(5)</div>
+      <table class="grid">
+        <tr><th>Nature of Supplies</th><th>Total taxable value</th><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+        <tr><td>(i) Taxable supplies on which e-commerce operator pays tax u/s 9(5)</td>
+          <td><input class="num" type="text" th:field="*{values['t311_i_val']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t311_i_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t311_i_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t311_i_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t311_i_cess']}"></td></tr>
+        <tr><td>(ii) Taxable supplies made by registered person through e-commerce operator</td>
+          <td><input class="num" type="text" th:field="*{values['t311_ii_val']}"></td>
+          <td colspan="4" class="hint" style="text-align:center">—</td></tr>
+      </table>
+
+      <div class="sec">3.2 — Inter-state supplies (out of 3.1(a) and 3.1.1(i))</div>
+      <table class="grid">
+        <tr><th>Nature of Supplies</th><th>Total taxable value</th><th>Integrated tax</th></tr>
+        <tr><td>Supplies made to Unregistered Persons</td>
+          <td><input class="num" type="text" th:field="*{values['t32_unreg_val']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t32_unreg_igst']}"></td></tr>
+        <tr><td>Supplies made to Composition Taxable Persons</td>
+          <td><input class="num" type="text" th:field="*{values['t32_comp_val']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t32_comp_igst']}"></td></tr>
+        <tr><td>Supplies made to UIN holders</td>
+          <td><input class="num" type="text" th:field="*{values['t32_uin_val']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t32_uin_igst']}"></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="sec">4 — Eligible ITC</div>
+      <table class="grid">
+        <tr><th>Details</th><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+        <tr><td class="hint" colspan="5"><strong>A. ITC Available</strong></td></tr>
+        <tr><td>(1) Import of goods</td>
+          <td><input class="num" type="text" th:field="*{values['t4_a1_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a1_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a1_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a1_cess']}"></td></tr>
+        <tr><td>(2) Import of services</td>
+          <td><input class="num" type="text" th:field="*{values['t4_a2_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a2_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a2_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a2_cess']}"></td></tr>
+        <tr><td>(3) Inward supplies liable to reverse charge (other than 1 &amp; 2)</td>
+          <td><input class="num" type="text" th:field="*{values['t4_a3_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a3_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a3_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a3_cess']}"></td></tr>
+        <tr><td>(4) Inward supplies from ISD</td>
+          <td><input class="num" type="text" th:field="*{values['t4_a4_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a4_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a4_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a4_cess']}"></td></tr>
+        <tr><td>(5) All other ITC</td>
+          <td><input class="num" type="text" th:field="*{values['t4_a5_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a5_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a5_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_a5_cess']}"></td></tr>
+        <tr><td class="hint" colspan="5"><strong>B. ITC Reversed</strong></td></tr>
+        <tr><td>(1) As per rules 38,42 &amp; 43 of CGST Rules and section 17(5)</td>
+          <td><input class="num" type="text" th:field="*{values['t4_b1_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_b1_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_b1_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_b1_cess']}"></td></tr>
+        <tr><td>(2) Others</td>
+          <td><input class="num" type="text" th:field="*{values['t4_b2_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_b2_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_b2_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_b2_cess']}"></td></tr>
+        <tr><td><strong>C. Net ITC available (A-B)</strong></td>
+          <td><input class="num" type="text" th:field="*{values['t4_c_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_c_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_c_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_c_cess']}"></td></tr>
+        <tr><td class="hint" colspan="5"><strong>D. Other Details</strong></td></tr>
+        <tr><td>(1) ITC reclaimed which was reversed under Table 4(B)(2) in earlier tax period</td>
+          <td><input class="num" type="text" th:field="*{values['t4_d1_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_d1_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_d1_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_d1_cess']}"></td></tr>
+        <tr><td>(2) Ineligible ITC under section 16(4) &amp; ITC restricted due to PoS rules</td>
+          <td><input class="num" type="text" th:field="*{values['t4_d2_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_d2_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_d2_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t4_d2_cess']}"></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="sec">5 — Exempt, nil-rated and non-GST inward supplies</div>
+      <table class="grid">
+        <tr><th>Nature of Supplies</th><th>Inter-State supplies</th><th>Intra-State supplies</th></tr>
+        <tr><td>From a supplier under composition scheme, Exempt, Nil rated supply</td>
+          <td><input class="num" type="text" th:field="*{values['t5_exempt_inter']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t5_exempt_intra']}"></td></tr>
+        <tr><td>Non GST supply</td>
+          <td><input class="num" type="text" th:field="*{values['t5_nonGst_inter']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t5_nonGst_intra']}"></td></tr>
+      </table>
+
+      <div class="sec">5.1 — Interest and Late fee for previous tax period</div>
+      <table class="grid">
+        <tr><th>Details</th><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+        <tr><td>System computed Interest</td><td colspan="4" class="hint" style="text-align:center">—</td></tr>
+        <tr><td>Interest Paid</td>
+          <td><input class="num" type="text" th:field="*{values['t51_interestPaid_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t51_interestPaid_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t51_interestPaid_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t51_interestPaid_cess']}"></td></tr>
+        <tr><td>Late fee</td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" th:field="*{values['t51_lateFee_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t51_lateFee_sgst']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="sec">6.1 — Payment of tax (A: Other than reverse charge)</div>
+      <table class="grid">
+        <tr><th>Description</th><th>Tax payable</th><th>Adjustment of negative liability</th><th>Net Tax Payable</th>
+            <th>ITC — Int.</th><th>ITC — Cen.</th><th>ITC — State</th><th>ITC — Cess</th>
+            <th>Tax paid in cash</th><th>Interest paid in cash</th><th>Late fee paid in cash</th></tr>
+        <tr><td>Integrated tax</td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_net']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_itcI']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_itcC']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_itcS']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_cash']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aIgst_intCash']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td></tr>
+        <tr><td>Central tax</td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_net']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_itcI']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_itcC']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_cash']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_intCash']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCgst_lfCash']}"></td></tr>
+        <tr><td>State/UT tax</td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_net']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_itcI']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_itcS']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_cash']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_intCash']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aSgst_lfCash']}"></td></tr>
+        <tr><td>Cess</td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCess_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCess_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCess_net']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" value="-" disabled></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCess_itcCess']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCess_cash']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_aCess_intCash']}"></td>
+          <td><input class="num" type="text" value="-" disabled></td></tr>
+      </table>
+
+      <div class="sec">6.1 — Payment of tax (B: Reverse charge &amp; supplies u/s 9(5))</div>
+      <table class="grid">
+        <tr><th>Description</th><th>Tax payable</th><th>Adjustment</th><th>Net Tax Payable</th><th>Tax paid in cash</th></tr>
+        <tr><td>Integrated tax</td>
+          <td><input class="num" type="text" th:field="*{values['t61_bIgst_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bIgst_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bIgst_net']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bIgst_cash']}"></td></tr>
+        <tr><td>Central tax</td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCgst_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCgst_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCgst_net']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCgst_cash']}"></td></tr>
+        <tr><td>State/UT tax</td>
+          <td><input class="num" type="text" th:field="*{values['t61_bSgst_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bSgst_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bSgst_net']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bSgst_cash']}"></td></tr>
+        <tr><td>Cess</td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCess_payable']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCess_adj']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCess_net']}"></td>
+          <td><input class="num" type="text" th:field="*{values['t61_bCess_cash']}"></td></tr>
+      </table>
+
+      <div class="sec">Breakup of tax liability declared (previous period)</div>
+      <table class="grid">
+        <tr><th>Integrated tax</th><th>Central tax</th><th>State/UT tax</th><th>Cess</th></tr>
+        <tr>
+          <td><input class="num" type="text" th:field="*{values['breakup_igst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['breakup_cgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['breakup_sgst']}"></td>
+          <td><input class="num" type="text" th:field="*{values['breakup_cess']}"></td></tr>
+      </table>
+
+      <div class="sec">Verification</div>
+      <table class="grid">
+        <tr><td class="lbl">Date *</td><td><input type="text" th:field="*{values['verifyDate']}" placeholder="dd/mm/yyyy"></td>
+            <td class="lbl">Name of Authorized Signatory *</td><td><input type="text" th:field="*{values['signatoryName']}"></td></tr>
+        <tr><td class="lbl">Designation / Status</td><td colspan="3"><input type="text" th:field="*{values['designation']}" placeholder="e.g. Owner"></td></tr>
+      </table>
+
+      <div class="btnbar">
+        <button class="btn btn-primary" type="submit">Generate PDF</button>
+        <a class="btn btn-secondary" href="/form/new">Reset</a>
+      </div>
+    </div>
+  </form>
+</div>
+</body>
+</html>
